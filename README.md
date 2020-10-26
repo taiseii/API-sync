@@ -1,9 +1,12 @@
-# API-sync
+# 📡 API-sync
 
 Sync API data to database
 
-### Setup + Prerequsite
+### 🛠️ Setup + Prerequsite
 - setup RabbitMQ in local macine or cloud
+```sh
+sudo service rabbitmq-server start
+```
 - setup MySQL in local machine or cloud
 
 ```sh
@@ -16,9 +19,15 @@ edit setting file in `API-sync/boloo_api/settings.py`
 SECRET_KEY = "secret secret secret"
 SHOP_KEY = "secret secret"
 ```
+celery setting, if running RabbitMQ locally
+```
+CELERY_BROKER_URL = 'amqp://127.0.0.1:5672/'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+```
 RabbitMQ and MySQL setup...
 
-### Gettings Started
+### 🍭 Gettings Started
 migrate + runserver
 ```py
 python manage.py makemigrations
@@ -29,6 +38,23 @@ Start celery in the virutualenv
 ```
 boloo_api celery -A boloo_api worker -l info
 ```
+
+### ⚠️ Production vs Testing 
+This mode will allow you to test the sync 
+initialisation function with 
+```
+python manage.py test
+```
+
+All the request will be sent to test_routes.
+```
+DEBUG = True
+```
+Eith this setting, it will send request to `actual BOL endpoint`
+```
+DEBUG = False
+```
+
 
 ## Routes
 After start running the server, check tese routes
@@ -108,3 +134,4 @@ After start running the server, check tese routes
             f"https://api.bol.com/retailer/shipments?page={counter}?filfilment-method=FBB"
         ]
 ```
+Use MySQL, but since I'm not deplying to cloud yet...
