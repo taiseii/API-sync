@@ -72,8 +72,21 @@ class RequestHandler(Task):
 
         payload = {}
         response = requests.request("GET", url, headers=headers, data=payload)
+        if response.status_code == 401:
+            #update token
+            self.refreshToken()
+            self.sendRequest(url)
+            
         self.rateLimitHandler.saveRequestLog()
-        return eval(response.text)
+        return_data = []
+        try:
+            return_data.append(eval(response.text))
+            # return_data.append()
+        except Exception as e:
+            return_data.append({'error'})
+
+        return_data.append(response.status_code)
+        return return_data
 
     def decrypt(self):
         return Fernet(settings.SHOP_KEY).decrypt(eval(self.shop.clientSecret))
@@ -91,8 +104,8 @@ class RequestHandler(Task):
         """
         url = "https://login.bol.com/token?grant_type=client_credentials"
         payload = {}
-        print(f'decrypted : { str(self.decrypt()) }')
-        print('refresh token')
+        print(f"decrypted : { str(self.decrypt()) }")
+        print("refresh token")
         credentials = f"{self.shop.clientId}:{self.decrypt().decode('utf-8')}"
         encodedCredentials = str(b64encode(credentials.encode("utf-8")), "utf-8")
         headers = {
@@ -105,8 +118,6 @@ class RequestHandler(Task):
                 data = {"clientToken": "testaa"}
             else:
                 response = requests.request("POST", url, headers=headers, data=payload)
-                print(headers)
-                print(json.loads(response.text.encode("utf-8")))
                 data = {
                     "clientToken": json.loads(response.text.encode("utf8"))[
                         "access_token"
@@ -140,33 +151,44 @@ class RequestHandler(Task):
         Return:
             None
         """
-        page_obj = {"start"}
+        page_obj = [{"start"}, 200]
         counter = 1
-        firfilment_list = ["FBR", "FBB"]
-        for fm in firfilment_list:
-            while page_obj:
+        # firfilment_list = ["FBR", "FBB"]
+        # firfilment_list = [
+        #     f"https://api.bol.com/retailer/shipments?page={counter}?filfilment-method=FBR",
+        #     f"https://api.bol.com/retailer/shipments?page={counter}?filfilment-method=FBB"
+        # ]
+        # for fm in firfilment_list:
+        while page_obj[0]:
 
-                if settings.DEBUG:
-                    url = f"http://127.0.0.1:8000/test_get_shipment/?page={counter}"
-                else:
-                    url = f"https://api.bol.com/retailer/shipments?page={counter}?filfilment-method={fm}"
+            if settings.DEBUG:
+                url = f"http://127.0.0.1:8000/test_get_shipment/?page={counter}"
+            else:
+                url = f"https://api.bol.com/retailer/shipments?page={counter}"
 
-                page_obj = self.sendRequest(url)
-                self.rateLimitHandler.saveRequestLog()
-                shipmentIdList = ShipmentOverviewHandler(
-                    self.shop, data=page_obj
-                ).saveShipment()
+            page_obj = self.sendRequest(str(url))
+            if page_obj[1] != 200:
+                raise Exception(page_obj)
+                #some times it will ask us to stop
+                sleep(2)
+                break
 
-                if shipmentIdList:
-                    for ship_id in shipmentIdList:
-                        self.syncShipmentDetails(ship_id)
+            self.rateLimitHandler.saveRequestLog()
+            shipmentIdList = ShipmentOverviewHandler(
+                self.shop, data=page_obj
+            ).saveShipment()
 
-                if counter == 10:
-                    print(page_obj)
-                    print(shipmentIdList)
-                    break
+            if shipmentIdList:
+                for ship_id in shipmentIdList:
+                    self.syncShipmentDetails(ship_id)
 
-                counter += 1
+            if counter == 10:
+                print(f"counter {counter}")
+                print(page_obj)
+                print(shipmentIdList)
+                break
+
+            counter += 1
 
     def syncShipmentDetails(self, shipmentId: int):
         """
@@ -186,6 +208,9 @@ class RequestHandler(Task):
             url = f"https://api.bol.com/retailer/shipments/{shipmentId}"
 
         detail_obj = self.sendRequest(url)
+        if detail_obj[1]!= 200:
+            raise Exception(detail_obj)
+
         ShipmentDetailHandler(self.shop, shipmentId, detail_obj).saveAll()
         return Response(detail_obj, status=status.HTTP_201_CREATED)
 
@@ -315,6 +340,7 @@ class ShipmentOverviewHandler(Task):
                 return shipment_id_list
         except Exception as e:
             print(e)
+
 
 class ShipmentDetailHandler(Task):
     """

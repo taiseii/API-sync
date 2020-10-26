@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework.views import APIView
@@ -73,10 +74,14 @@ class shopRequestLogSerializerView(viewsets.ModelViewSet):
     queryset = shopRequestLog.objects.all()
     serializer_class = shopRequestLogSerializer
 
+
 from .tasks import initialiseShipmentSync
 
 
 class UpdateShipmentView(APIView):
+    """
+    Where execution of the sync happens
+    """
 
     parser_class = [JSONParser]
 
@@ -147,7 +152,7 @@ def test_get_shipment(request, page):
             test_shipment_obj_3,
         ]
 
-    return Response(test_shipment_obj[int(page) - 1])
+    return Response(test_shipment_obj[int(page) - 1], status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
@@ -155,6 +160,7 @@ def test_get_shipment_detail(request, pk):
     if request.method == "GET":
         all_test_shipment_detail_obj = [
             {
+                "status": 200,
                 "shipmentId": 541757635,
                 "pickUpPoint": "true",
                 "shipmentDate": "2018-04-17T10:55:37+02:00",
@@ -309,4 +315,4 @@ def test_get_shipment_detail(request, pk):
             if pk == i["shipmentId"]:
                 return Response(i)
 
-        return Response(all_test_shipment_detail_obj)
+        return Response(all_test_shipment_detail_obj, status=status.HTTP_200_OK)
