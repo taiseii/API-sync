@@ -308,9 +308,9 @@ class ShipmentOverviewHandler(Task):
         """
         shipment_id_list = []
         try:
-            if self.data:
+            if self.data[0]:
                 print(self.data)
-                for shipment in self.data["shipments"]:
+                for shipment in self.data[0]["shipments"]:
                     shipment_obj = Shipments.objects.filter(
                         shipmentId=shipment["shipmentId"]
                     )
@@ -333,7 +333,7 @@ class ShipmentOverviewHandler(Task):
                             raise Exception(serializer.errors)
                 return shipment_id_list
         except Exception as e:
-            print(e)
+            raise Exception(e)
 
 
 class ShipmentDetailHandler(Task):
@@ -360,7 +360,7 @@ class ShipmentDetailHandler(Task):
         self.saveBillingDetails()
 
     def saveShipmentItems(self):
-        for shipmentItem in self.data["shipmentItems"]:
+        for shipmentItem in self.data[0]["shipmentItems"]:
 
             print(f"shipment Item {shipmentItem}")
 
@@ -394,7 +394,7 @@ class ShipmentDetailHandler(Task):
 
     def saveTransport(self):
         # print(transport)
-        transport = self.data["transport"]
+        transport = self.data[0]["transport"]
         data = {
             "transportId": transport["transportId"],
             "transporterCode": transport["transporterCode"],
@@ -413,7 +413,7 @@ class ShipmentDetailHandler(Task):
         return True
 
     def saveCustomerDetails(self):
-        customer_detail = self.data["customerDetails"]
+        customer_detail = self.data[0]["customerDetails"]
         data = {
             "pickUpPointName": customer_detail["pickUpPointName"],
             "salutationCode": customer_detail["salutationCode"],
@@ -445,7 +445,7 @@ class ShipmentDetailHandler(Task):
         return True
 
     def saveBillingDetails(self):
-        billing_detail = self.data["billingDetails"]
+        billing_detail = self.data[0]["billingDetails"]
         data = {
             "pickUpPointName": billing_detail["pickUpPointName"],
             "salutationCode": billing_detail["salutationCode"],
