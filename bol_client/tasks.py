@@ -182,12 +182,6 @@ class RequestHandler(Task):
                 for ship_id in shipmentIdList:
                     self.syncShipmentDetails(ship_id)
 
-            if counter == 10:
-                print(f"counter {counter}")
-                print(page_obj)
-                print(shipmentIdList)
-                break
-
             counter += 1
 
     def syncShipmentDetails(self, shipmentId: int):

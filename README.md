@@ -125,7 +125,7 @@ After start running the server, check tese routes
                 return HttpResponse(200)
 ```
 
-### 🐞 Bugs or Thing I should have done that 
+### 🐞 Bugs or Thing I should have done 
 
 = Always get encoded to %3d...
 ```py
