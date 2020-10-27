@@ -72,7 +72,7 @@ class RequestHandler(Task):
 
         payload = {}
         response = requests.request("GET", url, headers=headers, data=payload)
-        if response.status_code == 401:
+        if (response.status_code == 401) or (response.status_code == 400):
             #update token
             self.refreshToken()
             self.sendRequest(url)
@@ -84,6 +84,7 @@ class RequestHandler(Task):
             # return_data.append()
         except Exception as e:
             return_data.append({'error'})
+            raise Exception(e)
 
         return_data.append(response.status_code)
         return return_data
@@ -104,7 +105,7 @@ class RequestHandler(Task):
         """
         url = "https://login.bol.com/token?grant_type=client_credentials"
         payload = {}
-        print(f"decrypted : { str(self.decrypt()) }")
+        # print(f"decrypted : { str(self.decrypt()) }")
         print("refresh token")
         credentials = f"{self.shop.clientId}:{self.decrypt().decode('utf-8')}"
         encodedCredentials = str(b64encode(credentials.encode("utf-8")), "utf-8")
@@ -291,7 +292,7 @@ class RateLimitHandler(Task):
 class ShipmentOverviewHandler(Task):
     def __init__(self, shop, data):
         self.shop = shop
-        self.data = data
+        self.data = data[0]
 
     def saveShipment(self):
         """
@@ -308,9 +309,9 @@ class ShipmentOverviewHandler(Task):
         """
         shipment_id_list = []
         try:
-            if self.data[0]:
+            if self.data:
                 print(self.data)
-                for shipment in self.data[0]["shipments"]:
+                for shipment in self.data["shipments"]:
                     shipment_obj = Shipments.objects.filter(
                         shipmentId=shipment["shipmentId"]
                     )
@@ -350,7 +351,7 @@ class ShipmentDetailHandler(Task):
 
     def __init__(self, shop, shipmentId, data):
         self.shop = shop
-        self.data = data
+        self.data = data[0]
         self.shipmentId = shipmentId
 
     def saveAll(self):
@@ -360,7 +361,7 @@ class ShipmentDetailHandler(Task):
         self.saveBillingDetails()
 
     def saveShipmentItems(self):
-        for shipmentItem in self.data[0]["shipmentItems"]:
+        for shipmentItem in self.data["shipmentItems"]:
 
             print(f"shipment Item {shipmentItem}")
 
@@ -394,7 +395,7 @@ class ShipmentDetailHandler(Task):
 
     def saveTransport(self):
         # print(transport)
-        transport = self.data[0]["transport"]
+        transport = self.data["transport"]
         data = {
             "transportId": transport["transportId"],
             "transporterCode": transport["transporterCode"],
@@ -413,7 +414,7 @@ class ShipmentDetailHandler(Task):
         return True
 
     def saveCustomerDetails(self):
-        customer_detail = self.data[0]["customerDetails"]
+        customer_detail = self.data["customerDetails"]
         data = {
             "pickUpPointName": customer_detail["pickUpPointName"],
             "salutationCode": customer_detail["salutationCode"],
@@ -445,7 +446,7 @@ class ShipmentDetailHandler(Task):
         return True
 
     def saveBillingDetails(self):
-        billing_detail = self.data[0]["billingDetails"]
+        billing_detail = self.data["billingDetails"]
         data = {
             "pickUpPointName": billing_detail["pickUpPointName"],
             "salutationCode": billing_detail["salutationCode"],

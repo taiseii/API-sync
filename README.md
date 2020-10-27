@@ -36,7 +36,7 @@ python manage.py runserver
 ```
 Start celery in the virutualenv
 ```
-boloo_api celery -A boloo_api worker -l info
+celery -A boloo_api worker -l info
 ```
 
 ### ⚠️ Production vs Testing 
