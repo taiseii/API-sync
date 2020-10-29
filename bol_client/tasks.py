@@ -171,7 +171,7 @@ class RequestHandler(Task):
             if page_obj[1] != 200:
                 raise Exception(page_obj)
                 # some times it will ask us to stop
-                sleep(2)
+                sleep(10)
                 break
 
             self.rateLimitHandler.saveRequestLog()
@@ -242,6 +242,7 @@ class RateLimitHandler(Task):
             completed__gt=from_when, shopId=self.shop.shopId
         )
         remaining_call = settings.TOTAL_CALL_PER_CYCLE - len(calls_made)
+        print(f"remaning call : {remaining_call}")
         if remaining_call <= 0:
             print("rate limit reached, wait 1 hr")
             return settings.TOTAL_CYCLE

@@ -20,23 +20,23 @@ from .serializers import ShopCredentialsSerializer
 
 class ShipmentTestCase(TestCase):
     # Create your tests here.
-    # def test_update_shipment(self):
-    #     url = "http://127.0.0.1:8000/update_shipment"
-
-    #     payload = '{\r\n    "shop_name":["boloo"]\r\n}'
-    #     headers = {"Content-Type": "application/json"}
-
-    #     response = requests.request("POST", url, headers=headers, data=payload)
-    #     assert str(response.text) == '200'
-
-    def test_repeat_1000_shiment(self):
+    def test_update_shipment(self):
         url = "http://127.0.0.1:8000/update_shipment"
 
-        many_bolo = str(["boloo" for i in range(200001)])
-        tmp_payload = {"shop_name": many_bolo}
-        payload = json.dumps(tmp_payload)
+        payload = '{\r\n    "shop_name":["boloo"]\r\n}'
         headers = {"Content-Type": "application/json"}
 
         response = requests.request("POST", url, headers=headers, data=payload)
         assert str(response.text) == '200'
+
+    # def test_repeat_1000_shiment(self):
+    #     url = "http://127.0.0.1:8000/update_shipment"
+
+    #     many_bolo = str(["boloo" for i in range(200001)])
+    #     tmp_payload = {"shop_name": many_bolo}
+    #     payload = json.dumps(tmp_payload)
+    #     headers = {"Content-Type": "application/json"}
+
+    #     response = requests.request("POST", url, headers=headers, data=payload)
+    #     assert str(response.text) == '200'
 
