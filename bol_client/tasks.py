@@ -16,8 +16,7 @@ from .models import (
     shopRequestLog,
     Shipments,
     Transport,
-    CustomerDetails,
-    BillingDetails,
+    CustomerDetails
 )
 from .serializers import (
     ShopCredentialsSerializer,
@@ -26,8 +25,7 @@ from .serializers import (
     ShipmentsSerializer,
     ShipmentsItemsSerializer,
     TransportSerializer,
-    CustomerDetailsSerializer,
-    BillingDetailsSerializer,
+    CustomerDetailsSerializer
 )
 
 
@@ -73,17 +71,18 @@ class RequestHandler(Task):
         payload = {}
         response = requests.request("GET", url, headers=headers, data=payload)
         if (response.status_code == 401) or (response.status_code == 400):
-            #update token
+            # update token
             self.refreshToken()
             self.sendRequest(url)
-            
+
         self.rateLimitHandler.saveRequestLog()
         return_data = []
         try:
-            return_data.append(eval(response.text))
+            return_data.append(json.loads(response.text))
             # return_data.append()
         except Exception as e:
             return_data.append({'error'})
+            print(response.text)
             raise Exception(e)
 
         return_data.append(response.status_code)
@@ -93,7 +92,6 @@ class RequestHandler(Task):
         return Fernet(settings.SHOP_KEY).decrypt(eval(self.shop.clientSecret))
 
     def refreshToken(self):
-
         """
         refresh bearer token of the shop when needed
 
@@ -108,7 +106,8 @@ class RequestHandler(Task):
         # print(f"decrypted : { str(self.decrypt()) }")
         print("refresh token")
         credentials = f"{self.shop.clientId}:{self.decrypt().decode('utf-8')}"
-        encodedCredentials = str(b64encode(credentials.encode("utf-8")), "utf-8")
+        encodedCredentials = str(
+            b64encode(credentials.encode("utf-8")), "utf-8")
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Basic {encodedCredentials}",
@@ -118,7 +117,8 @@ class RequestHandler(Task):
             if settings.DEBUG:
                 data = {"clientToken": "testaa"}
             else:
-                response = requests.request("POST", url, headers=headers, data=payload)
+                response = requests.request(
+                    "POST", url, headers=headers, data=payload)
                 data = {
                     "clientToken": json.loads(response.text.encode("utf8"))[
                         "access_token"
@@ -170,7 +170,7 @@ class RequestHandler(Task):
             page_obj = self.sendRequest(str(url))
             if page_obj[1] != 200:
                 raise Exception(page_obj)
-                #some times it will ask us to stop
+                # some times it will ask us to stop
                 sleep(2)
                 break
 
@@ -203,7 +203,7 @@ class RequestHandler(Task):
             url = f"https://api.bol.com/retailer/shipments/{shipmentId}"
 
         detail_obj = self.sendRequest(url)
-        if detail_obj[1]!= 200:
+        if detail_obj[1] != 200:
             raise Exception(detail_obj)
 
         ShipmentDetailHandler(self.shop, shipmentId, detail_obj).saveAll()
@@ -236,12 +236,14 @@ class RateLimitHandler(Task):
             0 if we haven't reached the limit yet.
             1hr if we reached the limit already
         """
-        from_when = datetime.now(timezone.utc) - timedelta(seconds=settings.TOTAL_CYCLE)
+        from_when = datetime.now(timezone.utc) - \
+            timedelta(seconds=settings.TOTAL_CYCLE)
         calls_made = shopRequestLog.objects.filter(
             completed__gt=from_when, shopId=self.shop.shopId
         )
         remaining_call = settings.TOTAL_CALL_PER_CYCLE - len(calls_made)
         if remaining_call <= 0:
+            print("rate limit reached, wait 1 hr")
             return settings.TOTAL_CYCLE
         else:
             return 0
@@ -256,7 +258,8 @@ class RateLimitHandler(Task):
         Return:
             True {bool}
         """
-        serializer = tokenRequestLogSerializer(data={"shopId": self.shop.shopId})
+        serializer = tokenRequestLogSerializer(
+            data={"shopId": self.shop.shopId})
 
         if serializer.is_valid():
             serializer.save()
@@ -277,7 +280,8 @@ class RateLimitHandler(Task):
         Return:
             True {bool}
         """
-        serializer = shopRequestLogSerializer(data={"shopId": self.shop.shopId})
+        serializer = shopRequestLogSerializer(
+            data={"shopId": self.shop.shopId})
 
         if serializer.is_valid():
             serializer.save()
@@ -317,14 +321,25 @@ class ShipmentOverviewHandler(Task):
                     )
                     if len(shipment_obj) == 0:
                         # save new shipment to db
-                        date_time_obj = maya.parse(shipment["shipmentDate"]).datetime()
-                        data = {
-                            "shipmentId": shipment["shipmentId"],
-                            "shipmentDate": date_time_obj,
-                            "shipmentReference": shipment["shipmentReference"],
-                            "transportId": shipment["transport"]["transportId"],
-                            "shopId": self.shop.shopId,
-                        }
+                        date_time_obj = maya.parse(
+                            shipment["shipmentDate"]).datetime()
+                        shipment["shipmentDate"] = date_time_obj
+                        shipment["shopId"] = self.shop.shopId
+                        available_keys = list(shipment.keys())
+
+                        if "shipmentItems" in available_keys:
+                            shipment["orderItemId"] = shipment["shipmentItems"][0]["orderItemId"]
+                            shipment["orderId"] = shipment["shipmentItems"][0]["orderId"]
+                            available_keys.extend(["orderItemId", "orderId"])
+                            available_keys.remove("shipmentItems")
+
+                        if "transport" in available_keys:
+                            shipment['transportId'] = shipment['transport']['transportId']
+                            available_keys.append('transportId')
+                            available_keys.remove("transport")
+
+                        # print( {i:shipment[i] for i in available_keys} )
+                        data = {i: shipment[i] for i in available_keys}
                         serializer = ShipmentsSerializer(data=data)
                         if serializer.is_valid():
                             print("valid")
@@ -358,52 +373,47 @@ class ShipmentDetailHandler(Task):
         self.saveShipmentItems()
         self.saveTransport()
         self.saveCustomerDetails()
-        self.saveBillingDetails()
 
     def saveShipmentItems(self):
-        for shipmentItem in self.data["shipmentItems"]:
+        """
+        save shipment items
+        """
+        shipmentItem = self.data["shipmentItems"][0]
+        available_keys = list(shipmentItem.keys())
 
-            print(f"shipment Item {shipmentItem}")
+        if "pickUpPoint" in self.data.keys():
+            available_keys.append('pickUpPoint')
+            shipmentItem['pickUpPoint'] = str(self.data['pickUpPoint'])
 
-            # maya.parse(shipment["shipmentDate"]).datetime()
+        shipmentItem["orderDate"] = maya.parse(
+            shipmentItem["orderDate"]).datetime()
+        shipmentItem["latestDeliveryD"] = maya.parse(
+            shipmentItem["latestDeliveryDate"]
+        ).datetime()
 
-            data = {
-                "orderItemId": shipmentItem["orderItemId"],
-                "orderId": shipmentItem["orderId"],
-                "orderDate": maya.parse(shipmentItem["orderDate"]).datetime(),
-                "latestDeliveryDate": maya.parse(
-                    shipmentItem["latestDeliveryDate"]
-                ).datetime(),
-                "ean": shipmentItem["ean"],
-                "title": shipmentItem["title"],
-                "quantity": shipmentItem["quantity"],
-                "offerprice": shipmentItem["offerPrice"],
-                "offerCondition": shipmentItem["offerCondition"],
-                "offerReference": shipmentItem["offerReference"],
-                "fulfilmentMethod": shipmentItem["fulfilmentMethod"],
-                "shipmentId": self.shipmentId,
-            }
-            serializer = ShipmentsItemsSerializer(data=data)
+        available_keys.append('shipmentId')
+        shipmentItem['shipmentId'] = self.shipmentId
 
-            if serializer.is_valid():
-                serializer.save()
-                print("shipment detail saved")
-            else:
-                raise Exception(serializer.errors)
+        data = {i: shipmentItem[i] for i in available_keys}
+
+        print(f"saveShipmentItems {data}")
+
+        serializer = ShipmentsItemsSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            print("shipment detail saved")
+        else:
+            raise Exception(serializer.errors)
 
         return True
 
     def saveTransport(self):
-        # print(transport)
         transport = self.data["transport"]
-        data = {
-            "transportId": transport["transportId"],
-            "transporterCode": transport["transporterCode"],
-            "trackAndTrace": transport["trackAndTrace"],
-            "shippingLabelId": transport["shippingLabelId"],
-            "shippingLabelCode": transport["shippingLabelCode"],
-            "shipmentId": self.shipmentId,
-        }
+        available_keys = list(transport.keys())
+        available_keys.append('shipmentId')
+        transport['shipmentId'] = self.shipmentId
+        data = {i: transport[i] for i in available_keys}
         serializer = TransportSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -415,63 +425,14 @@ class ShipmentDetailHandler(Task):
 
     def saveCustomerDetails(self):
         customer_detail = self.data["customerDetails"]
-        data = {
-            "pickUpPointName": customer_detail["pickUpPointName"],
-            "salutationCode": customer_detail["salutationCode"],
-            "firstName": customer_detail["firstName"],
-            "surname": customer_detail["surname"],
-            "streetName": customer_detail["streetName"],
-            "houseNumber": customer_detail["houseNumber"],
-            "houseNumberExtended": customer_detail["houseNumberExtended"],
-            "addressSupplement": customer_detail["addressSupplement"],
-            "extraAddressInformation": customer_detail["extraAddressInformation"],
-            "zipCode": customer_detail["zipCode"],
-            "city": customer_detail["city"],
-            "countryCode": customer_detail["countryCode"],
-            "email": customer_detail["email"],
-            "company": customer_detail["company"],
-            "vatNumber": customer_detail["vatNumber"],
-            "chamberOfCommerceNumber": customer_detail["chamberOfCommerceNumber"],
-            "orderReference": customer_detail["orderReference"],
-            "deliveryPhoneNumber": customer_detail["deliveryPhoneNumber"],
-            "shipmentId": self.shipmentId,
-        }
+        available_keys = list(customer_detail.keys())
+        available_keys.append('shipmentId')
+        customer_detail['shipmentId'] = self.shipmentId
+        data = {i: customer_detail[i] for i in available_keys}
         serializer = CustomerDetailsSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             print("customer detail is saved")
-        else:
-            raise Exception(serializer.errors)
-
-        return True
-
-    def saveBillingDetails(self):
-        billing_detail = self.data["billingDetails"]
-        data = {
-            "pickUpPointName": billing_detail["pickUpPointName"],
-            "salutationCode": billing_detail["salutationCode"],
-            "firstName": billing_detail["firstName"],
-            "surname": billing_detail["surname"],
-            "streetName": billing_detail["streetName"],
-            "houseNumber": billing_detail["houseNumber"],
-            "houseNumberExtended": billing_detail["houseNumberExtended"],
-            "addressSupplement": billing_detail["addressSupplement"],
-            "extraAddressInformation": billing_detail["extraAddressInformation"],
-            "zipCode": billing_detail["zipCode"],
-            "city": billing_detail["city"],
-            "countryCode": billing_detail["countryCode"],
-            "email": billing_detail["email"],
-            "company": billing_detail["company"],
-            "vatNumber": billing_detail["vatNumber"],
-            "chamberOfCommerceNumber": billing_detail["chamberOfCommerceNumber"],
-            "orderReference": billing_detail["orderReference"],
-            "deliveryPhoneNumber": billing_detail["deliveryPhoneNumber"],
-            "shipmentId": self.shipmentId,
-        }
-        serializer = BillingDetailsSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            print("billing detail is saved")
         else:
             raise Exception(serializer.errors)
 

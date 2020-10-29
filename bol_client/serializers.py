@@ -4,7 +4,7 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 from .models import (ShopCredentials, Shipments, ShipmentsItems,
                      Transport, CustomerDetails, shopRequestLog,
-                     tokenRequestLog, BillingDetails)
+                     tokenRequestLog)
 
 
 class ShopCredentialsSerializer(serializers.ModelSerializer):
@@ -30,44 +30,29 @@ class ShipmentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shipments
         fields = ('shipmentId', 'shipmentDate', 'shipmentReference',
-                  'transportId', 'shopId')
+                  'transportId', 'shopId', 'orderItemId', 'orderId')
 
 
 class ShipmentsItemsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShipmentsItems
-        fields = ('orderItemId', 'orderId', 'orderDate', 'latestDeliveryDate',
-                  'ean', 'title', 'quantity', 'offerprice', 'offerCondition',
-                  'offerReference', 'fulfilmentMethod', 'shipmentId')
+        fields = ('pickUpPoint', 'orderItemId', 'orderId', 'orderDate',
+                  'latestDeliveryDate', 'ean', 'title', 'quantity', 'offerPrice',
+                  'offerCondition', 'offerReference', 'fulfilmentMethod',
+                  'shipmentId')
 
 
 class TransportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transport
         fields = ('transportId', 'transporterCode', 'trackAndTrace',
-                  'shippingLabelId', 'shippingLabelCode', 'shipmentId')
+                  'shipmentId')
 
 
 class CustomerDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerDetails
-        fields = ('pickUpPointName', 'salutationCode', 'firstName',
-                  'surname', 'streetName', 'houseNumber', 'houseNumberExtended',
-                  'addressSupplement', 'extraAddressInformation', 'zipCode',
-                  'city', 'countryCode', 'email', 'company', 'vatNumber',
-                  'chamberOfCommerceNumber', 'orderReference',
-                  'deliveryPhoneNumber', 'shipmentId')
-
-
-class BillingDetailsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BillingDetails
-        fields = ('pickUpPointName', 'salutationCode', 'firstName',
-                  'surname', 'streetName', 'houseNumber', 'houseNumberExtended',
-                  'addressSupplement', 'extraAddressInformation', 'zipCode',
-                  'city', 'countryCode', 'email', 'company', 'vatNumber',
-                  'chamberOfCommerceNumber', 'orderReference',
-                  'deliveryPhoneNumber', 'shipmentId')
+        fields = ('salutationCode', 'zipCode', 'countryCode', 'shipmentId')
 
 
 class tokenRequestLogSerializer(serializers.ModelSerializer):

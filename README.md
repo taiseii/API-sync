@@ -38,6 +38,9 @@ Start celery in the virutualenv
 ```
 celery -A boloo_api worker -l info
 ```
+Populate shop_credential at [http://127.0.0.1:8000/shop_credentials],
+
+*leave the token empty initially
 
 ### ⚠️ Production vs Testing 
 This mode will allow you to test the sync 

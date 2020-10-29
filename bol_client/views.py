@@ -1,3 +1,4 @@
+from .tasks import initialiseShipmentSync
 import requests
 import json
 from base64 import b64encode
@@ -16,7 +17,6 @@ from .models import (
     ShipmentsItems,
     Transport,
     CustomerDetails,
-    BillingDetails,
     shopRequestLog,
     tokenRequestLog,
 )
@@ -26,7 +26,6 @@ from .serializers import (
     ShipmentsItemsSerializer,
     TransportSerializer,
     CustomerDetailsSerializer,
-    BillingDetailsSerializer,
     shopRequestLogSerializer,
     tokenRequestLogSerializer,
 )
@@ -60,11 +59,6 @@ class CustomerDetailsSerializerView(viewsets.ModelViewSet):
     serializer_class = CustomerDetailsSerializer
 
 
-class BillingDetailsSerializerView(viewsets.ModelViewSet):
-    queryset = BillingDetails.objects.all()
-    serializer_class = BillingDetailsSerializer
-
-
 class tokenRequestLogSerializerView(viewsets.ModelViewSet):
     queryset = tokenRequestLog.objects.all()
     serializer_class = shopRequestLogSerializer
@@ -73,9 +67,6 @@ class tokenRequestLogSerializerView(viewsets.ModelViewSet):
 class shopRequestLogSerializerView(viewsets.ModelViewSet):
     queryset = shopRequestLog.objects.all()
     serializer_class = shopRequestLogSerializer
-
-
-from .tasks import initialiseShipmentSync
 
 
 class UpdateShipmentView(APIView):
@@ -104,46 +95,135 @@ def test_get_shipment(request, page):
         test_shipment_obj_1 = {
             "shipments": [
                 {
-                    "shipmentId": 541757635,
-                    "shipmentDate": "2018-04-17T10:55:37+02:00",
-                    "shipmentReference": "BOLCOM001",
+                    "shipmentId": 780184287,
+                    "shipmentDate": "2020-08-20T19:49:22+02:00",
+                    "shipmentReference": "P2020-10533",
                     "shipmentItems": [
-                        {"orderItemId": "1234567891", "orderId": "4123456789"}
+                        {
+                            "orderItemId": "2443071085",
+                            "orderId": "1135670078"
+                        }
                     ],
-                    "transport": {"transportId": 312778947},
+                    "transport": {
+                        "transportId": 521249417
+                    }
                 },
                 {
-                    "shipmentId": 541757636,
-                    "shipmentDate": "2018-05-17T10:55:37+02:00",
-                    "shipmentReference": "BOLCOM002",
+                    "shipmentId": 777298069,
+                    "shipmentDate": "2020-08-11T17:12:19+02:00",
+                    "shipmentReference": "P2020-9451",
                     "shipmentItems": [
-                        {"orderItemId": "1234567892", "orderId": "4123456790"}
+                        {
+                            "orderItemId": "2439306307",
+                            "orderId": "1133440117"
+                        }
                     ],
-                    "transport": {"transportId": 312778948},
+                    "transport": {
+                        "transportId": 518251373
+                    }
                 },
+                {
+                    "shipmentId": 773780130,
+                    "shipmentDate": "2020-07-31T17:19:25+02:00",
+                    "shipmentReference": "P2020-7742",
+                    "shipmentItems": [
+                        {
+                            "orderItemId": "2434918422",
+                            "orderId": "1130406498"
+                        }
+                    ],
+                    "transport": {
+                        "transportId": 514639454
+                    }
+                },
+                {
+                    "shipmentId": 773780126,
+                    "shipmentDate": "2020-07-31T17:19:22+02:00",
+                    "shipmentReference": "P2020-7743",
+                    "shipmentItems": [
+                        {
+                            "orderItemId": "2434924939",
+                            "orderId": "1130410755"
+                        }
+                    ],
+                    "transport": {
+                        "transportId": 514639448
+                    }
+                },
+                {
+                    "shipmentId": 773397055,
+                    "shipmentDate": "2020-07-30T15:05:05+02:00",
+                    "shipmentItems": [
+                        {
+                            "orderItemId": "2430476244",
+                            "orderId": "1128667641"
+                        }
+                    ],
+                    "transport": {
+                        "transportId": 514245508
+                    }
+                },
+                {
+                    "shipmentId": 773293313,
+                    "shipmentDate": "2020-07-30T10:04:22+02:00",
+                    "shipmentReference": "P2020-7602",
+                    "shipmentItems": [
+                        {
+                            "orderItemId": "2434618878",
+                            "orderId": "1130198146"
+                        }
+                    ],
+                    "transport": {
+                        "transportId": 514136952
+                    }
+                }
             ]
         }
         test_shipment_obj_2 = {
-            # "shipments": [
-            #     {
-            #         "shipmentId": 541757637,
-            #         "shipmentDate": "2018-04-18T10:55:39+02:00",
-            #         "shipmentReference": "BOLCOM001",
-            #         "shipmentItems": [
-            #             {"orderItemId": "1234567891", "orderId": "4123456789"}
-            #         ],
-            #         "transport": {"transportId": 312778947},
-            #     },
-            #     {
-            #         "shipmentId": 541757638,
-            #         "shipmentDate": "2018-05-17T10:55:37+02:00",
-            #         "shipmentReference": "BOLCOM002",
-            #         "shipmentItems": [
-            #             {"orderItemId": "1234567892", "orderId": "4123456790"}
-            #         ],
-            #         "transport": {"transportId": 312778948},
-            #     },
-            # ]
+            "shipments": [
+                {
+                    "shipmentId": 780184299,
+                    "shipmentDate": "2020-08-20T19:49:22+02:00",
+                    "shipmentReference": "P2020-10533",
+                    "shipmentItems": [
+                        {
+                            "orderItemId": "2443071085",
+                            "orderId": "1135670078"
+                        }
+                    ],
+                    "transport": {
+                        "transportId": 521249417
+                    }
+                },
+                {
+                    "shipmentId": 777245069,
+                    "shipmentDate": "2020-08-11T17:12:19+02:00",
+                    "shipmentReference": "P2020-9451",
+                    "shipmentItems": [
+                        {
+                            "orderItemId": "2439306307",
+                            "orderId": "1133440117"
+                        }
+                    ],
+                    "transport": {
+                        "transportId": 518251373
+                    }
+                },
+                {
+                    "shipmentId": 733080130,
+                    "shipmentDate": "2020-07-31T17:19:25+02:00",
+                    "shipmentReference": "P2020-7742",
+                    "shipmentItems": [
+                        {
+                            "orderItemId": "2434918422",
+                            "orderId": "1130406498"
+                        }
+                    ],
+                    "transport": {
+                        "transportId": 514639454
+                    }
+                }
+            ]
         }
         test_shipment_obj_3 = {}
         test_shipment_obj = [
@@ -158,161 +238,42 @@ def test_get_shipment(request, page):
 @api_view(["GET"])
 def test_get_shipment_detail(request, pk):
     if request.method == "GET":
-        all_test_shipment_detail_obj = [
-            {
-                "status": 200,
-                "shipmentId": 541757635,
-                "pickUpPoint": "true",
-                "shipmentDate": "2018-04-17T10:55:37+02:00",
-                "shipmentReference": "BOLCOM001",
-                "shipmentItems": [
-                    {
-                        "orderItemId": "1234567891",
-                        "orderId": "4123456789",
-                        "orderDate": "2018-04-17T10:55:37+02:00",
-                        "latestDeliveryDate": "2018-04-20T10:55:37+02:00",
-                        "ean": "0000007740404",
-                        "title": "Product Title",
-                        "quantity": 10,
-                        "offerPrice": 12.99,
-                        "offerCondition": "NEW",
-                        "offerReference": "BOLCOM00123",
-                        "fulfilmentMethod": "FBR",
-                    },
-                    {
-                        "orderItemId": "1234567892",
-                        "orderId": "4123456789",
-                        "orderDate": "2018-04-17T10:55:37+02:00",
-                        "latestDeliveryDate": "2018-04-20T10:55:37+02:00",
-                        "ean": "0000007740404",
-                        "title": "Product Title",
-                        "quantity": 10,
-                        "offerPrice": 12.99,
-                        "offerCondition": "NEW",
-                        "offerReference": "BOLCOM00124",
-                        "fulfilmentMethod": "FBR",
-                    },
-                ],
-                "transport": {
-                    "transportId": 312778947,
-                    "transporterCode": "TNT",
-                    "trackAndTrace": "3SBOL0987654321",
-                    "shippingLabelId": 123456789,
-                    "shippingLabelCode": "PLR00000002",
-                },
-                "customerDetails": {
-                    "pickUpPointName": "Albert Heijn: UTRECHT",
-                    "salutationCode": "02",
-                    "firstName": "Billie",
-                    "surname": "Jansen",
-                    "streetName": "Dorpstraat",
-                    "houseNumber": "1",
-                    "houseNumberExtended": "B",
-                    "addressSupplement": "Afdeling kwaliteit",
-                    "extraAddressInformation": "Apartment",
-                    "zipCode": "1111 ZZ",
-                    "city": "Utrecht",
-                    "countryCode": "NL",
-                    "email": "billie@verkopen.bol.com",
-                    "company": "bol.com",
-                    "vatNumber": "NL999999999B99",
-                    "chamberOfCommerceNumber": "99887766",
-                    "orderReference": "MijnReferentie",
-                    "deliveryPhoneNumber": "012123456",
-                },
-                "billingDetails": {
-                    "pickUpPointName": "Albert Heijn: UTRECHT",
-                    "salutationCode": "02",
-                    "firstName": "Billie",
-                    "surname": "Jansen",
-                    "streetName": "Dorpstraat",
-                    "houseNumber": "1",
-                    "houseNumberExtended": "B",
-                    "addressSupplement": "Afdeling kwaliteit",
-                    "extraAddressInformation": "Apartment",
-                    "zipCode": "1111 ZZ",
-                    "city": "Utrecht",
-                    "countryCode": "NL",
-                    "email": "billie@verkopen.bol.com",
-                    "company": "bol.com",
-                    "vatNumber": "NL999999999B99",
-                    "chamberOfCommerceNumber": "99887766",
-                    "orderReference": "MijnReferentie",
-                    "deliveryPhoneNumber": "012123456",
-                },
-            },
-            {
-                "shipmentId": 541757636,
-                "pickUpPoint": "true",
-                "shipmentDate": "2018-04-17T10:55:37+02:00",
-                "shipmentReference": "BOLCOM001",
-                "shipmentItems": [
-                    {
-                        "orderItemId": "1234567891",
-                        "orderId": "4123456789",
-                        "orderDate": "2018-04-17T10:55:37+02:00",
-                        "latestDeliveryDate": "2018-04-20T10:55:37+02:00",
-                        "ean": "0000007740404",
-                        "title": "Product Title",
-                        "quantity": 10,
-                        "offerPrice": 12.99,
-                        "offerCondition": "NEW",
-                        "offerReference": "BOLCOM00123",
-                        "fulfilmentMethod": "FBR",
-                    }
-                ],
-                "transport": {
-                    "transportId": 312778947,
-                    "transporterCode": "TNT",
-                    "trackAndTrace": "3SBOL0987654321",
-                    "shippingLabelId": 123456789,
-                    "shippingLabelCode": "PLR00000002",
-                },
-                "customerDetails": {
-                    "pickUpPointName": "Albert Heijn: UTRECHT",
-                    "salutationCode": "02",
-                    "firstName": "Billie",
-                    "surname": "Jansen",
-                    "streetName": "Dorpstraat",
-                    "houseNumber": "1",
-                    "houseNumberExtended": "B",
-                    "addressSupplement": "Afdeling kwaliteit",
-                    "extraAddressInformation": "Apartment",
-                    "zipCode": "1111 ZZ",
-                    "city": "Utrecht",
-                    "countryCode": "NL",
-                    "email": "billie@verkopen.bol.com",
-                    "company": "bol.com",
-                    "vatNumber": "NL999999999B99",
-                    "chamberOfCommerceNumber": "99887766",
-                    "orderReference": "MijnReferentie",
-                    "deliveryPhoneNumber": "012123456",
-                },
-                "billingDetails": {
-                    "pickUpPointName": "Albert Heijn: UTRECHT",
-                    "salutationCode": "02",
-                    "firstName": "Billie",
-                    "surname": "Jansen",
-                    "streetName": "Dorpstraat",
-                    "houseNumber": "1",
-                    "houseNumberExtended": "B",
-                    "addressSupplement": "Afdeling kwaliteit",
-                    "extraAddressInformation": "Apartment",
-                    "zipCode": "1111 ZZ",
-                    "city": "Utrecht",
-                    "countryCode": "NL",
-                    "email": "billie@verkopen.bol.com",
-                    "company": "bol.com",
-                    "vatNumber": "NL999999999B99",
-                    "chamberOfCommerceNumber": "99887766",
-                    "orderReference": "MijnReferentie",
-                    "deliveryPhoneNumber": "012123456",
-                },
-            },
-        ]
 
-        for i in all_test_shipment_detail_obj:
-            if pk == i["shipmentId"]:
-                return Response(i)
+        shipment_id_list = [777298069, 773780130, 773780126, 773397055,
+                            773293313, 780184299, 777245069, 733080130,
+                            780184287]
+        all_test_shipment_detail_obj = {i: {
+            "shipmentId": i,
+            "pickUpPoint": 'false',
+            "shipmentDate": "2020-08-20T19:49:22+02:00",
+            "shipmentReference": "P2020-10533",
+            "shipmentItems": [
+                {
+                    "orderItemId": "2443071085",
+                    "orderId": "1135670078",
+                    "orderDate": "2020-08-20T15:50:54+02:00",
+                    "latestDeliveryDate": "2020-08-24T00:00:00+02:00",
+                    "ean": "7141225472340",
+                    "title": "Desinfecterende Handgel - Handgel Desinfecterende - 250 ml - Desinfectie - Desinfecterende Alcohol Spray - Desinfecterende Handspray - Handig Meenemen",
+                    "quantity": 4,
+                    "offerPrice": 59.80,
+                    "offerCondition": "UNKNOWN",
+                    "fulfilmentMethod": "FBR"
+                }
+            ],
+            "transport": {
+                "transportId": 521249417,
+                "transporterCode": "TNT",
+                "trackAndTrace": "3SYZXG127962494"
+            },
+            "customerDetails": {
+                "salutationCode": "03",
+                "zipCode": "1213PB",
+                "countryCode": "NL"
+            }
+        } for i in shipment_id_list
+        }
 
-        return Response(all_test_shipment_detail_obj, status=status.HTTP_200_OK)
+        print(all_test_shipment_detail_obj[pk])
+
+        return Response(all_test_shipment_detail_obj[pk], status=status.HTTP_200_OK)

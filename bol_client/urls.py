@@ -8,7 +8,6 @@ router.register('shipments', views.ShipmentsView)
 router.register('shipments_item', views.ShipmentsItemsView)
 router.register('transport', views.TransportSerializerView)
 router.register('customer_details', views.CustomerDetailsSerializerView)
-router.register('billing_details', views.BillingDetailsSerializerView)
 
 router.register('token_request_log', views.tokenRequestLogSerializerView)
 router.register('shop_request_log', views.shopRequestLogSerializerView)
