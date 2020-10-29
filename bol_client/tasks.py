@@ -169,9 +169,12 @@ class RequestHandler(Task):
 
             page_obj = self.sendRequest(str(url))
             if page_obj[1] != 200:
+                # if too many request then chill for a bit
+                if page_obj[1] == 429:
+                    sleep(5)
                 raise Exception(page_obj)
-                # some times it will ask us to stop
-                sleep(10)
+                
+              
                 break
 
             self.rateLimitHandler.saveRequestLog()

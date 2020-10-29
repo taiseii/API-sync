@@ -24,7 +24,7 @@ SECRET_KEY = '3dsgs2^k+bh%d!zu0mm+0ti0!iivzmnv-#1livi2-ps(8eq11q'
 SHOP_KEY = b'y13H4Fhe4dB6i9knevb9FUKrR0ca-VdmVz6u7bubjFc='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
